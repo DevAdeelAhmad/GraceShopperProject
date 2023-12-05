@@ -1,25 +1,24 @@
-import React, { useEffect } from 'react';
+import React, { useEffect } from "react";
 import { Box, Card, CardContent, Typography } from "@mui/material";
 import { useSelector, useDispatch } from "react-redux";
-import { clearCart } from './cartItemSlice';
-import { clearGuestCart } from './guesCartSlice';
-import SportsEsportsIcon from '@mui/icons-material/SportsEsports';
+import { clearAllItems } from "./cartItemSlice";
+import { clearGuestCart } from "./guesCartSlice";
+import SportsEsportsIcon from "@mui/icons-material/SportsEsports";
 
 const Complete = () => {
   const user = useSelector((state) => state.auth.me);
-  const dispatch =  useDispatch(); 
-  
+  const dispatch = useDispatch();
+
   useEffect(() => {
     if (user) {
-      dispatch(clearCart());
+      dispatch(clearAllItems(user.id));
     } else {
-      dispatch(clearGuestCart)
+      dispatch(clearGuestCart());
     }
-  }, [dispatch, user])
-
+  }, [dispatch, user]);
 
   return (
-    <Box sx={{ maxWidth: 400, mx: 'auto', mt: 4 }}>
+    <Box sx={{ maxWidth: 400, mx: "auto", mt: 4 }}>
       <Card>
         <CardContent>
           <Typography variant="h5" gutterBottom>
@@ -29,8 +28,10 @@ const Complete = () => {
             Hi {user.firstname},
           </Typography>
           <Typography variant="body1" gutterBottom>
-            Thank you for shopping with us! We are happy you have found something you like. As soon as your package has shipped, you will receive a confirmation email. Happy gaming!
-            <SportsEsportsIcon sx={{ fontSize: 30, verticalAlign: 'middle' }} />
+            Thank you for shopping with us! We are happy you have found
+            something you like. As soon as your package has shipped, you will
+            receive a confirmation email. Happy gaming!
+            <SportsEsportsIcon sx={{ fontSize: 30, verticalAlign: "middle" }} />
           </Typography>
         </CardContent>
       </Card>
@@ -39,4 +40,3 @@ const Complete = () => {
 };
 
 export default Complete;
-

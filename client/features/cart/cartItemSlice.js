@@ -56,14 +56,41 @@ export const updateCartItem = createAsyncThunk(
   }
 );
 
+export const clearAllItems = createAsyncThunk(
+  "cartItems/clearAllItems",
+  async (userId, { dispatch }) => {
+    try {
+      console.log("Clearing all items for userId:", userId);
+      await axios.delete(`/api/cartItems/${userId}/clearAllItems`);
+      console.log("Clear all items successful");
+      // Dispatch fetchCartItems to refresh the cart items after clearing
+      dispatch(fetchCartItems(userId));
+      return userId;
+    } catch (error) {
+      if (error.response && error.response.status === 404) {
+        console.log("No items found in the cart");
+      } else {
+        console.log("Failed to clear Cart");
+      }
+      throw error; // Re-throw the error to be handled by the component
+    }
+  }
+);
+
 export const clearCart = createAsyncThunk(
   "cartItems/clearCart",
   async (userId) => {
     try {
+      console.log("Clearing cart for userId:", userId);
       const response = await axios.delete(`/api/cartItems/${userId}`);
+      console.log("Clear cart response:", response.data);
       return userId;
     } catch (error) {
-      throw Error("Failed to clear cart");
+      if (error.response.status === 404) {
+        console.log("Item not found");
+      } else {
+        console.log("Failed to clear Cart");
+      }
     }
   }
 );
@@ -102,7 +129,7 @@ export const cartItemSlice = createSlice({
       });
     builder.addCase(removeCartItem.fulfilled, (state, action) => {
       state.status = "succeeded";
-      state.userId = action.payload.userId; // store userId from the response
+      state.userId = action.payload.userId;
       state.cartItem = state.cartItem.filter(
         (item) => item.id !== action.payload
       );
@@ -123,6 +150,18 @@ export const cartItemSlice = createSlice({
     builder.addCase(updateCartItem.rejected, (state, action) => {
       state.status = "failed";
       state.error = action.error.message;
+    });
+    builder.addCase(clearAllItems.fulfilled, (state, action) => {
+      state.status = "succeeded";
+      state.cartItem = [];
+    });
+    builder.addCase(clearAllItems.rejected, (state, action) => {
+      state.status = "failed";
+      if (action.error.response && action.error.response.status === 404) {
+        console.log("No items found in the cart");
+      } else {
+        console.log("Failed to clear Cart");
+      }
     });
     builder.addCase(clearCart.pending, (state) => {
       state.status = "loading";

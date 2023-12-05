@@ -29,7 +29,11 @@ const Checkout = () => {
   const subtotal = useMemo(() => {
     return displayItems
       ? displayItems.reduce((acc, item) => {
-          return acc + Number(item.price || 0) * item.quantity;
+          const price = item.product && item.product.price;
+          return (
+            acc +
+            (price && !isNaN(Number(price)) ? Number(price) : 0) * item.quantity
+          );
         }, 0)
       : 0;
   }, [displayItems]);

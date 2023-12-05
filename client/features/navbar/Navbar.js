@@ -101,6 +101,46 @@ const Navbar = ({ searchString, setSearchString }) => {
     setDrawerOpen(open);
   };
 
+  useEffect(() => {
+    const updateBadgeCount = () => {
+      // Update badge count logic
+      // Example: setBadgeCount(cartItems.length);
+    };
+
+    if (userId) {
+      dispatch(fetchCartItems(userId))
+        .then(() => {
+          // After fetching cart items, update the badge count
+          updateBadgeCount();
+        })
+        .catch((error) => {
+          console.error("Error fetching cart items:", error);
+        });
+    } else {
+      const guestCart = localStorage.getItem("guestCart");
+      if (guestCart) {
+        dispatch(setGuestCartItems(JSON.parse(guestCart)));
+        // Update badge count after setting guest cart items
+        updateBadgeCount();
+      }
+    }
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId, dispatch]); // Include dispatch in the dependency array if needed
+
+  const handleClearAllItems = () => {
+    // Dispatch clearAllItems action to clear all items in the cart
+    dispatch(clearAllItems(userId))
+      .then(() => {
+        // After clearing all items, update the badge count
+        updateBadgeCount();
+      })
+      .catch((error) => {
+        console.error("Error clearing all items:", error);
+        // Handle the error as needed
+      });
+  };
+
   return (
     <Box
       sx={{

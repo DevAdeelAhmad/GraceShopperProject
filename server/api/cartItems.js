@@ -3,7 +3,6 @@ const {
   models: { CartItem, User, Product },
 } = require("../db");
 
-// Route to serve CartItems
 router.get("/:userId", async (req, res, next) => {
   console.log("Endpoint /api/cartItems/:userId hit"); // test
   try {
@@ -24,19 +23,35 @@ router.get("/:userId", async (req, res, next) => {
     next(error);
   }
 });
+router.delete("/:userId/clearAllItems", async (req, res, next) => {
+  try {
+    const userId = req.params.userId;
+    const deletedCount = await CartItem.destroy({
+      where: {
+        userId: Number(userId),
+      },
+    });
+    if (deletedCount > 0) {
+      res.status(204).send("All items deleted");
+    } else {
+      res.status(404).send("No items found in the cart");
+    }
+  } catch (error) {
+    next(error);
+  }
+});
 
-// Route to delete cartItems
 router.delete("/:userId/:productId", async (req, res, next) => {
   try {
     const { userId, productId } = req.params;
     const deletedCount = await CartItem.destroy({
       where: {
-        userId: userId,
+        userId: Number(userId),
         productId: productId,
       },
     });
     if (deletedCount > 0) {
-      res.status(204).send("items deleted");
+      res.status(204).send("Item deleted");
     } else {
       res.status(404).send("Item not found");
     }
@@ -44,6 +59,7 @@ router.delete("/:userId/:productId", async (req, res, next) => {
     next(error);
   }
 });
+
 router.post("/:userId", async (req, res, next) => {
   try {
     const { productId, userId } = req.body;
@@ -55,10 +71,8 @@ router.post("/:userId", async (req, res, next) => {
     });
 
     if (cartItem) {
-      // If the item already exists, increment the quantity
       cartItem.quantity += 1;
     } else {
-      // If the item doesn't exist, create a new cart item
       cartItem = await CartItem.create({
         productId: productId,
         userId: userId,
@@ -89,7 +103,6 @@ router.put("/:userId/:productId", async (req, res, next) => {
       cartItem.quantity = quantity;
 
       if (cartItem.quantity <= 0) {
-        // If quantity is less than or equal to 0, remove the item from the cart
         await cartItem.destroy();
       } else {
         await cartItem.save();
